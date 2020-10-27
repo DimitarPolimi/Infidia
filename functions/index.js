@@ -241,7 +241,6 @@ app.get('/api/storeid/:id', (req, res)=> {
 });
 
 //Read All Stores
-
 app.get('/api/stores', (req, res)=> {
 
     (async () => {
@@ -280,6 +279,63 @@ app.get('/api/stores', (req, res)=> {
         }
     })();
 }); 
+
+//Read all stores mobile
+exports.getAllStores = functions.https.onCall((data, context) => { 
+    const uid = context.auth.uid;
+    return db
+    .collection('users')
+    .doc(uid)
+    .collection("stores")
+    .get().then( querySnapshot => {
+        let docs = querySnapshot.docs; //results
+        let response =[];
+        for (let doc of docs)
+        {
+            response.push( {
+                id: doc.id,
+                name: doc.data().name,
+                city: doc.data().city,
+                country: doc.data().country,
+                street: doc.data().street
+            })
+        }
+        return response;
+    });
+});
+
+//Read all stores mobile
+exports.getAllProducts = functions.https.onCall((data, context) => { 
+    const uid = context.auth.uid;
+    return db
+        .collection('users')
+        .doc(uid)
+        .collection('products')
+        .get().then( querySnapshot => {
+            let docs = querySnapshot.docs; //results
+            let response =[];
+            for (let doc of docs)
+            {
+                response.push( {
+                    id: doc.id,
+                    name: doc.data().name,
+                    price: doc.data().price
+                })
+            }
+            return response;
+        });
+});
+
+exports.createOrder = functions.https.onCall((data, context) => {
+    const uid = context.auth.uid;
+    return db
+        .collection('users')
+        .doc(uid)
+        .collection('orders')
+        .add(data).then(function(docRef) {
+            return {orderId: docRef.id};
+        })
+});
 
 //Read Product ID
 app.get('/api/productid/:id', (req, res)=> {
